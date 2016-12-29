@@ -1,9 +1,5 @@
 package com.teamtreehouse.albumcover;
 
-import android.animation.Animator;
-import android.animation.AnimatorInflater;
-import android.animation.AnimatorSet;
-import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
@@ -13,20 +9,22 @@ import android.support.v7.graphics.Palette;
 import android.transition.ChangeBounds;
 import android.transition.Fade;
 import android.transition.Scene;
+import android.transition.Transition;
 import android.transition.TransitionManager;
 import android.transition.TransitionSet;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AccelerateInterpolator;
-import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+
+import com.teamtreehouse.albumcover.transition.Fold;
+import com.teamtreehouse.albumcover.transition.Scale;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-
+//activity transitions define animations of individual views when moving between activities
 public class AlbumDetailActivity extends Activity {
 
     public static final String EXTRA_ALBUM_ART_RESID = "EXTRA_ALBUM_ART_RESID";
@@ -51,29 +49,29 @@ public class AlbumDetailActivity extends Activity {
         setupTransitions();
     }
 
-    //property animation framework
+    /*//property animation framework
     private void animate(){
 
-        /*
+        *//*
         define in XML instead: declarative, easier to read, easier to reuse
 
         ObjectAnimator scalex = ObjectAnimator.ofFloat(fab, "scaleX", 0, 1);
         ObjectAnimator scaley = ObjectAnimator.ofFloat(fab, "scaleY", 0, 1);
         AnimatorSet scaleFab = new AnimatorSet();
         scaleFab.playTogether(scalex, scaley);
-        */
+        *//*
 
         Animator scaleFab = AnimatorInflater.loadAnimator(this, R.animator.scale);
         scaleFab.setTarget(fab);
         //what view to pass this animation into
 
-        /*
+        *//*
         fab.setScaleX(0);
         fab.setScaleY(0);
         //start at nothing and scale to appropriate size
         fab.animate().scaleX(1).scaleY(1).start();
         //animate() is wrapper for property animation API
-        */
+        *//*
 
         //ObjectAnimator
         int titleStartValue = titlePanel.getTop();
@@ -104,14 +102,42 @@ public class AlbumDetailActivity extends Activity {
         AnimatorSet set = new AnimatorSet();
         set.playSequentially(animatorTitle, animatorTrack, scaleFab);
         set.start();
-    }
+    }*/
 
+    //replacing above animation code with Transition
+    private Transition createTransition(){
+        TransitionSet set = new TransitionSet();
+        set.setOrdering(TransitionSet.ORDERING_SEQUENTIAL);
+
+        //custom transitions
+        Transition tFab = new Scale();
+        tFab.setDuration(150);
+        tFab.addTarget(fab);
+
+        Transition tTitle = new Fold();
+        tTitle.setDuration(150);
+        tTitle.addTarget(titlePanel);
+
+        Transition tTrack = new Fold();
+        tTrack.setDuration(150);
+        tTrack.addTarget(trackPanel);
+
+        set.addTransition(tTrack);
+        set.addTransition(tTitle);
+        set.addTransition(tFab);
+
+        return set;
+    }
 
 
 
     @OnClick(R.id.album_art)
     public void onAlbumArtClick(View view) {
-        animate();
+        Transition transition = createTransition();
+        TransitionManager.beginDelayedTransition(detailContainer, transition);
+        fab.setVisibility(View.INVISIBLE);
+        titlePanel.setVisibility(View.INVISIBLE);
+        trackPanel.setVisibility(View.INVISIBLE);
     }
 
     @OnClick(R.id.track_panel)
@@ -126,6 +152,9 @@ public class AlbumDetailActivity extends Activity {
     }
 
     private void setupTransitions() {
+        //getWindow().setEnterTransition(new Slide(Gravity.RIGHT));
+        //getWindow().setReturnTransition(new Fade());
+
         mTransitionManager = new TransitionManager();
         ViewGroup transitionRoot = detailContainer;
 
