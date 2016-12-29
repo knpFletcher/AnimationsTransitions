@@ -9,9 +9,11 @@ import android.support.v7.graphics.Palette;
 import android.transition.ChangeBounds;
 import android.transition.Fade;
 import android.transition.Scene;
+import android.transition.Slide;
 import android.transition.Transition;
 import android.transition.TransitionManager;
 import android.transition.TransitionSet;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
@@ -152,8 +154,13 @@ public class AlbumDetailActivity extends Activity {
     }
 
     private void setupTransitions() {
-        //getWindow().setEnterTransition(new Slide(Gravity.RIGHT));
-        //getWindow().setReturnTransition(new Fade());
+//        Slide slide = new Slide(Gravity.BOTTOM);
+//        slide.excludeTarget(android.R.id.statusBarBackground, true);
+//            //exclude views from showing in transition
+//            //delete color attribute in xml for transparent animation background
+//        getWindow().setEnterTransition(slide);
+//        getWindow().setSharedElementsUseOverlay(false);
+//            //FAB doesn't hide behind album art overlay
 
         mTransitionManager = new TransitionManager();
         ViewGroup transitionRoot = detailContainer;
@@ -214,9 +221,26 @@ public class AlbumDetailActivity extends Activity {
         mTransitionManager.setTransition(mExpandedScene, mCollapsedScene, collapseTransitionSet);
         mTransitionManager.setTransition(mCollapsedScene, mExpandedScene, expandTransitionSet);
         mCollapsedScene.enter();
+
+        //postponeEnterTransition();
+            //postpone Transition until album art has loaded
     }
 
     private void populate() {
+        //use handler to add 1 sec delay to simulate latency of async image loading from internet
+//        new Handler().postDelayed(new Runnable(){
+//
+//            @Override
+//            public void run() {
+//                int albumArtResId = getIntent().getIntExtra(EXTRA_ALBUM_ART_RESID, R.drawable.mean_something_kinder_than_wolves);
+//                albumArtView.setImageResource(albumArtResId);
+//
+//                Bitmap albumBitmap = getReducedBitmap(albumArtResId);
+//                colorizeFromImage(albumBitmap);
+//
+//                startPostponedEnterTransition();
+//            }
+//        }, 1000);
         int albumArtResId = getIntent().getIntExtra(EXTRA_ALBUM_ART_RESID, R.drawable.mean_something_kinder_than_wolves);
         albumArtView.setImageResource(albumArtResId);
 
@@ -251,6 +275,6 @@ public class AlbumDetailActivity extends Activity {
                 palette.getVibrantColor(defaultFabColor),
                 palette.getLightVibrantColor(defaultFabColor)
         };
-        fab.setBackgroundTintList(new ColorStateList(states, colors));
+        //fab.setBackgroundTintList(new ColorStateList(states, colors));
     }
 }
